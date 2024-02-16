@@ -32,7 +32,7 @@ type LogEntry struct {
 	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
 }
 
-func (l *LogEntry) Insert(entry *LogEntry) (*LogEntry, error) {
+func (l *LogEntry) Insert(entry LogEntry) error {
 	collection := client.Database("logs").Collection("logs")
 
 	_, err := collection.InsertOne(context.TODO(), LogEntry{
@@ -42,10 +42,10 @@ func (l *LogEntry) Insert(entry *LogEntry) (*LogEntry, error) {
 		UpdatedAt: time.Now(),
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return entry, err
+	return nil
 }
 
 func (l *LogEntry) All() ([]*LogEntry, error) {
@@ -125,7 +125,9 @@ func (l *LogEntry) Update() (*mongo.UpdateResult, error) {
 		return nil, err
 	}
 
-	result, err := collection.UpdateOne(ctx, bson.M{"_id": docID},
+	result, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": docID},
 		bson.D{
 			{"$set", bson.D{
 				{"name", l.Name},
@@ -134,9 +136,10 @@ func (l *LogEntry) Update() (*mongo.UpdateResult, error) {
 			}},
 		},
 	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return result, err
+	return result, nil
 }

@@ -22,7 +22,6 @@ type Config struct {
 
 func main() {
 	log.Println("Starting authentication service")
-
 	conn := connectToDB()
 	if conn == nil {
 		log.Panic("Failed to connect to db")
