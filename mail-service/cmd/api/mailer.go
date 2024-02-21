@@ -5,6 +5,7 @@ import (
 	"github.com/vanng822/go-premailer/premailer"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"html/template"
+	"log"
 	"time"
 )
 
@@ -43,6 +44,7 @@ func (m *Mail) SendSMTP(message Message) error {
 	}
 
 	message.DataMap = data
+	log.Println(message.DataMap)
 
 	formattedMessage, err := m.buildHTMLMessage(message)
 	if err != nil {
@@ -74,7 +76,7 @@ func (m *Mail) SendSMTP(message Message) error {
 	email := mail.NewMSG()
 
 	//Set email properties
-	email.SetFrom(message.From).SetFrom(message.FromName).
+	email.SetFrom(message.From).
 		AddTo(message.To).
 		SetSubject(message.Subject)
 
@@ -101,11 +103,13 @@ func (m *Mail) buildPlainTextMessage(message Message) (string, error) {
 
 	t, err := template.New("email-plain").ParseFiles(templateToRender)
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
 	var tpl bytes.Buffer
-	if err = t.ExecuteTemplate(&tpl, "data", message.DataMap); err != nil {
+	if err = t.ExecuteTemplate(&tpl, "body", message.DataMap); err != nil {
+		log.Println(err)
 		return "", err
 	}
 
@@ -119,12 +123,15 @@ func (m *Mail) buildHTMLMessage(message Message) (string, error) {
 
 	t, err := template.New("email-html").ParseFiles(templateToRender)
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
 	var tpl bytes.Buffer
-	if err = t.ExecuteTemplate(&tpl, "data", message.DataMap); err != nil {
+	if err = t.ExecuteTemplate(&tpl, "body", message.DataMap); err != nil {
+		log.Println(err)
 		return "", err
+
 	}
 
 	formattedMessage := tpl.String()
