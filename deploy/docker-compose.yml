@@ -130,3 +130,14 @@ services:
       - ./db-data/rabbitmq:/var/lib/rabbitmq
     networks:
         - app-network
+
+  listener-service:
+    build:
+      context: ./../listener-service
+      dockerfile: ./../listener-service/listener-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+        - app-network
