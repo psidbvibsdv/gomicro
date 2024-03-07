@@ -116,13 +116,13 @@ services:
         - app-network
 
   rabbitmq:
-    image: rabbitmq:3.9-alpine
+    image: rabbitmq:3.12-alpine
     restart: always
     ports:
       - "5672:5672"
     environment:
-      RABBITMQ_DEFAULT_USER: rabbitmq
-      RABBITMQ_DEFAULT_PASS: rabbitmq
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     deploy:
       mode: replicated
       replicas: 1
