@@ -114,3 +114,19 @@ services:
       FROM_ADDRESS: john.smith@example.com
     networks:
         - app-network
+
+  rabbitmq:
+    image: rabbitmq:3.9-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq:/var/lib/rabbitmq
+    networks:
+        - app-network
