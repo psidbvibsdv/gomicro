@@ -114,3 +114,30 @@ services:
       FROM_ADDRESS: john.smith@example.com
     networks:
         - app-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq:/var/lib/rabbitmq
+    networks:
+        - app-network
+
+  listener-service:
+    build:
+      context: ./../listener-service
+      dockerfile: ./../listener-service/listener-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+        - app-network
