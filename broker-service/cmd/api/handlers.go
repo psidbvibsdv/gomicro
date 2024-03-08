@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/psidbvibsdv/broker/event"
 	"log"
 	"net/http"
 )
@@ -59,7 +60,8 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
 		log.Println("log")
-		app.logItem(w, requestPayload.Log)
+		//app.logItem(w, requestPayload.Log)
+		app.logRabbitEvent(w, requestPayload.Log)
 	case "mail":
 		log.Println("mail2")
 		app.sendMail(w, requestPayload.Mail)
@@ -200,4 +202,37 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 		log.Println("no json response")
 		return
 	}
+}
+
+func (app *Config) logRabbitEvent(w http.ResponseWriter, l LogPayload) {
+	err := app.pushToQueue(l.Name, l.Data)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "Logged via rabbitmq!"
+	app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) pushToQueue(name, msg string) error {
+	emitter, err := event.NewEmitter(app.Rabbit)
+	if err != nil {
+		return err
+	}
+
+	payload := LogPayload{
+		Name: name,
+		Data: msg,
+	}
+
+	j, _ := json.Marshal(payload)
+	err = emitter.Push(string(j), "log.INFO")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
