@@ -80,3 +80,64 @@ services:
       replicas: 1
     networks:
         - app-network
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+        - app-network
+
+  mail-service:
+    build:
+      context: ./../mail-service
+      dockerfile: ./../mail-service/mail-service.dockerfile
+    restart: always
+    ports:
+      - "8083:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_ENCRYPTION: none
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      FROM_NAME: "John Smith"
+      FROM_ADDRESS: john.smith@example.com
+    networks:
+        - app-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq:/var/lib/rabbitmq
+    networks:
+        - app-network
+
+  listener-service:
+    build:
+      context: ./../listener-service
+      dockerfile: ./../listener-service/listener-service.dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+        - app-network
